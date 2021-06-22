@@ -12,10 +12,11 @@ Tech Stack:
 - CSS Flexbox
 - Responsive Design
 
-# How to use
+# Getting Started
 ```bash
 git clone https://github.com/emirkucukosman/we-connect.git
 cd we-connect
+npm install
 npm start
 ```
 
