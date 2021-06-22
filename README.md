@@ -1,7 +1,7 @@
 # React/Typescript Social Media Application with Firebase
 
-Technologies practiced in this project:
-- React.js with Typescript
+Tech Stack:
+- React.js
 - React.js Context API
 - Firebase
 - Typescript
@@ -12,4 +12,11 @@ Technologies practiced in this project:
 - CSS Flexbox
 - Responsive Design
 
-# See the live deployed app [here](https://quirky-lovelace-a077d5.netlify.app/)
+# How to use
+```bash
+git clone https://github.com/emirkucukosman/we-connect.git
+cd we-connect
+npm start
+```
+
+# See the live deployed app [here](https://quirky-lovelace-a077d5.netlify.app/) 🚀
