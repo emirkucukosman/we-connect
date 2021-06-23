@@ -3,6 +3,7 @@ import Page from "src/components/Page";
 import CreatePostCard from "src/components/CreatePostCard";
 import PostCard from "src/components/PostCard/PostCard";
 import useAuth from "src/hooks/useAuth";
+import useIsMountedRef from "src/hooks/useIsMountedRef";
 import { Box, CircularProgress, Container, makeStyles } from "@material-ui/core";
 import { useSnackbar } from "notistack";
 import { firestore } from "src/firebase";
@@ -17,6 +18,7 @@ const useStyles = makeStyles((theme) => ({
 
 const ListPostsView = () => {
   const classes = useStyles();
+  const isMountedRef = useIsMountedRef();
   const { user, isAuthenticated } = useAuth();
   const { enqueueSnackbar } = useSnackbar();
   const [posts, setPosts] = useState<any[]>([]);
@@ -24,7 +26,8 @@ const ListPostsView = () => {
 
   const handleReaction = (id: string, reaction: "like" | "unlike") => {
     const index = posts.findIndex((p: any) => p.id === id);
-    const likeCount = reaction === "like" ? posts[index].likeCount + 1 : posts[index].likeCount - 1;
+    const likeCount =
+      reaction === "like" ? posts[index].likeCount + 1 : posts[index].likeCount - 1;
     const likersUsernames =
       reaction === "like"
         ? [...posts[index].likersUsernames, user!.name]
@@ -55,33 +58,32 @@ const ListPostsView = () => {
     ]);
   };
 
-  const handleCreatePost = (post: any) => {
-    setPosts([post, ...posts]);
-  };
+  useEffect(() => {
+    const unsubscribe = firestore.collection("posts").onSnapshot(
+      (snapshot) => {
+        if (isMountedRef.current) {
+          setLoading(true);
+        }
 
-  const fetchAllPosts = () => {
-    setLoading(true);
-    const result: any[] = [];
-    firestore
-      .collection("posts")
-      .get()
-      .then((querySnapshot) => {
-        querySnapshot.forEach((doc) => {
+        const result: any[] = [];
+        snapshot.forEach((doc) => {
           result.push({
             id: doc.id,
             ...doc.data(),
           });
         });
-        setPosts(result);
-      })
-      .catch(() => {
-        enqueueSnackbar("Can not get posts at the moment", { variant: "error" });
-      })
-      .finally(() => setLoading(false));
-  };
 
-  useEffect(() => {
-    fetchAllPosts();
+        if (isMountedRef.current) {
+          setPosts(result);
+          setLoading(false);
+        }
+      },
+      () => {
+        enqueueSnackbar("Can not get posts at the moment", { variant: "error" });
+      }
+    );
+
+    return () => unsubscribe();
     // eslint-disable-next-line
   }, []);
 
@@ -96,7 +98,7 @@ const ListPostsView = () => {
   return (
     <Page className={classes.root} title="Posts">
       <Container maxWidth="lg">
-        {isAuthenticated ? <CreatePostCard emitCreatePost={handleCreatePost} /> : null}
+        {isAuthenticated ? <CreatePostCard /> : null}
         {posts.map((post, i) => (
           <PostCard
             key={i}

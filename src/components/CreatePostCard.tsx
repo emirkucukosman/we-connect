@@ -7,9 +7,10 @@ import {
   Typography,
   TextField,
   Button,
-  CircularProgress,
+  // CircularProgress,
 } from "@material-ui/core";
 import useAuth from "src/hooks/useAuth";
+import useIsMountedRef from "src/hooks/useIsMountedRef";
 import { useSnackbar } from "notistack";
 import { firestore } from "src/firebase";
 
@@ -33,12 +34,9 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-type CreatePostCardProps = {
-  emitCreatePost: (post: any) => void;
-};
-
-const CreatePostCard: React.FC<CreatePostCardProps> = ({ emitCreatePost }) => {
+const CreatePostCard: React.FC = () => {
   const classes = useStyles();
+  const isMountedRef = useIsMountedRef();
   const [status, setStatus] = useState("");
   const { isAuthenticated, user } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -69,18 +67,15 @@ const CreatePostCard: React.FC<CreatePostCardProps> = ({ emitCreatePost }) => {
       .collection("posts")
       .doc()
       .set(createdPost)
-      .then(() => emitCreatePost(createdPost))
-      .catch(() => enqueueSnackbar("Can not share your post at the moment.", { variant: "error" }))
-      .finally(() => setLoading(false));
+      .catch(() =>
+        enqueueSnackbar("Can not share your post at the moment.", { variant: "error" })
+      )
+      .finally(() => {
+        if (isMountedRef.current) {
+          setLoading(false);
+        }
+      });
   };
-
-  if (loading) {
-    return (
-      <Box display="flex" justifyContent="center" width="100%">
-        <CircularProgress />
-      </Box>
-    );
-  }
 
   return (
     <form onSubmit={handleCreatePostSubmit}>
@@ -101,7 +96,13 @@ const CreatePostCard: React.FC<CreatePostCardProps> = ({ emitCreatePost }) => {
             fullWidth
           />
           <Box mt={1} display="flex" justifyContent="flex-end">
-            <Button color="primary" variant="contained" type="submit" className={classes.button}>
+            <Button
+              color="primary"
+              variant="contained"
+              type="submit"
+              className={classes.button}
+              disabled={loading}
+            >
               Post
             </Button>
           </Box>

@@ -11,6 +11,7 @@ import {
 } from "@material-ui/core";
 import { useSnackbar } from "notistack";
 import useAuth from "src/hooks/useAuth";
+import useIsMountedRef from "src/hooks/useIsMountedRef";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -37,6 +38,7 @@ const Form = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const classes = useStyles();
+  const isMountedRef = useIsMountedRef();
   const { signInWithEmailAndPassword } = useAuth();
   const { enqueueSnackbar } = useSnackbar();
 
@@ -49,7 +51,9 @@ const Form = () => {
     } catch (error) {
       enqueueSnackbar(error.message || "Unknown error occured", { variant: "error" });
     } finally {
-      setLoading(false);
+      if (isMountedRef.current) {
+        setLoading(false);
+      }
     }
   };
 
